@@ -10,15 +10,14 @@ TIMESTAMP_PATTERN = re.compile(r'(\d+):(\d\d):(\d\d)')
 
 def print_usage():
     print(f'usage: {PROG_NAME} OFFSET SUBTITLE_FILE OUTPUT_FILE')
-    print('Delay subtitles in MTP format by OFFSET number of seconds.')
+    print('Delay or hasten subtitles in MTP format by OFFSET number of seconds.')
 
 
 def main(prog_name, *args):
-    if len(sys.argv) != 3:
-        arg_count = len(args)
+    if len(args) != 3:
         print(
             f'{PROG_NAME}: Wrong number of arguments.',
-            'Required 3, but found {arg_count}'
+            f'Required 3, but found {len(args)}'
         )
         print_usage()
         exit(1)
@@ -27,6 +26,33 @@ def main(prog_name, *args):
     output_fname = args[2]
     with open(subtitle_fname) as subtitle_file:
         subtitle_file_lines = list(subtitle_file)
+    with open(output_fname, 'x') as output_file:
+        for line in offset_subtitles(subtitle_file_lines, offset):
+            print(line, file=output_file)
+
+
+def offset_subtitles(lines, seconds):
+    """Delay/hasten timestamps of lines in format of TMPlayer subtitle file.
+
+        >>> subs = [
+        ...     "00:26:18:I'm a liar, a hypocrite.",
+        ...     "00:26:21:I'm afraid of everything|I don't ever tell the truth.",
+        ...     "00:26:25:I don't have the courage.",
+        ...     "00:26:29:When I see a woman, I blush and look away.",
+        ...     "00:26:32:I want her, but I don't take her... for God.",
+        ... ]
+        >>> for line in offset_subtitles(subs, 5):
+        ...     print(line)
+        ... 
+        00:26:23:I'm a liar, a hypocrite.
+        00:26:26:I'm afraid of everything|I don't ever tell the truth.
+        00:26:30:I don't have the courage.
+        00:26:34:When I see a woman, I blush and look away.
+        00:26:37:I want her, but I don't take her... for God.
+        >>> 
+    """
+    for line in lines:
+        yield offset_line(line, seconds)
 
 
 def offset_line(line, seconds):
@@ -68,4 +94,4 @@ def offset_timestamp(timestamp, seconds):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main(*sys.argv)
