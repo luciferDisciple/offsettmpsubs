@@ -50,9 +50,25 @@ def offset_subtitles(lines, seconds):
         00:26:34:When I see a woman, I blush and look away.
         00:26:37:I want her, but I don't take her... for God.
         >>> 
+
+    If senconds argument is negative, subtitles that would have to appear
+    before 00:00:00 moment, will be excluded from the result:
+
+        >>> subs = [
+        ...     '00:00:10=Translation & sync by luciferdisciple',
+        ...     '00:00:30=Long, long time ago|in a land far, far away...'
+        ... ]
+        >>> for line in offset_subtitles(subs, -20):
+        ...     print(line)
+        ... 
+        00:00:10=Long, long time ago|in a land far, far away...
+        >>> 
     """
     for line in lines:
-        yield offset_line(line, seconds)
+        fixed_line = offset_line(line, seconds)
+        if fixed_line.startswith('-'):
+            continue
+        yield fixed_line
 
 
 def offset_line(line, seconds):
