@@ -6,11 +6,18 @@ import sys
 PROG_NAME = 'offset_tmp_subs'
 SUBTITLE_LINE_PATTERN = re.compile(r'(\d+:\d\d:\d\d)([:=])(.*)')
 TIMESTAMP_PATTERN = re.compile(r'(\d+):(\d\d):(\d\d)')
+OFFSET_TIME_PATTERNS = {
+        'ONLY SECONDS': re.compile(r'[-+]?\d+'),
+        'WITH MINUTES': re.compile(r'([-+])?(\d\d):(\d\d)'),
+        'WITH HOURS': re.compile(r'([-+])?(\d+):(\d\d):(\d\d)')
+}
 
 
 def print_usage():
     print(f'usage: {PROG_NAME} OFFSET SUBTITLE_FILE OUTPUT_FILE')
     print('Delay or hasten subtitles in MTP format by OFFSET number of seconds.')
+    print('OFFSET can be a signed number of seconds or a time string similar')
+    print('to: -01:30, +02:00, or 01:23:45.')
 
 
 def main(prog_name, *args):
@@ -21,14 +28,67 @@ def main(prog_name, *args):
         )
         print_usage()
         exit(1)
-    offset = int(args[0])
+    offset_string = args[0]
     subtitle_fname = args[1]
     output_fname = args[2]
+    offset = total_seconds(offset_string)
     with open(subtitle_fname) as subtitle_file:
         subtitle_file_lines = list(subtitle_file)
     with open(output_fname, 'x') as output_file:
         for line in offset_subtitles(subtitle_file_lines, offset):
             print(line, file=output_file)
+
+
+"""Convert a timestamp string with hours, minutes, and seconds to a total
+number of seconds:
+
+    >>> timestamp_to_seconds('02:10:39')
+    7839
+
+You can omit hours and seconds:
+
+    >>> timestamp_to_seconds('01:10')
+    70
+    >>> timestamp_to_seconds('120')
+    120
+"""
+
+def total_seconds(offset_string):
+    """Convert a timestamp string with hours, minutes, and seconds to a total
+    number of seconds:
+
+        >>> total_seconds('02:10:39')
+        7839
+
+    You can omit hours and seconds:
+
+        >>> total_seconds('01:10')
+        70
+        >>> total_seconds('120')
+        120
+
+    Argument may be signed:
+
+        >>> total_seconds('-01:02:03')
+        -3723
+        >>> total_seconds('+03:55')
+        235
+    """
+    if match := OFFSET_TIME_PATTERNS['ONLY SECONDS'].fullmatch(offset_string):
+        return int(offset_string)
+    elif match := OFFSET_TIME_PATTERNS['WITH MINUTES'].fullmatch(offset_string):
+        sign = -1 if match.groups()[0] == '-' else 1
+        minutes = int(match.groups()[1])
+        seconds = int(match.groups()[2])
+        return (minutes * 60 + seconds) * sign
+    elif match := OFFSET_TIME_PATTERNS['WITH HOURS'].fullmatch(offset_string):
+        sign = -1 if match.groups()[0] == '-' else 1
+        hours = int(match.groups()[1])
+        minutes = int(match.groups()[2])
+        seconds = int(match.groups()[3])
+        return (hours * 3600 + minutes * 60 + seconds) * sign
+    else:
+        raise ValueError(f'bad time offset string {offset_string!r}')
 
 
 def offset_subtitles(lines, seconds):
