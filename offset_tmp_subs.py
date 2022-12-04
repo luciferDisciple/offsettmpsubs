@@ -18,15 +18,15 @@ def main(*argv):
             prog='offset_tmp_subs',
             description='Delay or hasten subtitles in MTP format.'
             )
-    parser.add_argument('offset', help='amount of time, by which the '
-                        'timestamps in the output file should be delayed (if '
-                        'negative) or hasten. Examples of allowed values: '
-                        '"10" (delay by ten seconds), "-10", "+10", '
-                        '"-01:00" (hasten by one minute), '
-                        '"01:00:00" (delay by one hour)')
-    parser.add_argument('input_file',
+    parser.add_argument('offset', metavar='OFFSET',
+                        help='amount of time, by which the timestamps in the '
+                        'output file should be delayed (if negative) or '
+                        'hasten. Examples of allowed values: "10" (delay by '
+                        'ten seconds), "-10", "+10", "-01:00" (hasten by one '
+                        'minute), "01:00:00" (delay by one hour)')
+    parser.add_argument('input_file', metavar='INFILE',
                         help='file name of the original subtitle file')
-    parser.add_argument('output_file',
+    parser.add_argument('output_file', metavar='OUTFILE',
                         help='file name of the new file with delayed/hastened '
                         'subtitles')
     args = parser.parse_args(argv[1:])
