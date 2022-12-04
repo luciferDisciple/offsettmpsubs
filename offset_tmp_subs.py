@@ -1,9 +1,9 @@
 #!/bin/python3
 
+import argparse
 import re
 import sys
 
-PROG_NAME = 'offset_tmp_subs'
 SUBTITLE_LINE_PATTERN = re.compile(r'(\d+:\d\d:\d\d)([:=])(.*)')
 TIMESTAMP_PATTERN = re.compile(r'(\d+):(\d\d):(\d\d)')
 OFFSET_TIME_PATTERNS = {
@@ -13,45 +13,30 @@ OFFSET_TIME_PATTERNS = {
 }
 
 
-def print_usage():
-    print(f'usage: {PROG_NAME} OFFSET SUBTITLE_FILE OUTPUT_FILE')
-    print('Delay or hasten subtitles in MTP format by OFFSET number of seconds.')
-    print('OFFSET can be a signed number of seconds or a time string similar')
-    print('to: -01:30, +02:00, or 01:23:45.')
-
-
-def main(prog_name, *args):
-    if len(args) != 3:
-        print(
-            f'{PROG_NAME}: Wrong number of arguments.',
-            f'Required 3, but found {len(args)}'
-        )
-        print_usage()
-        exit(1)
-    offset_string = args[0]
-    subtitle_fname = args[1]
-    output_fname = args[2]
-    offset = total_seconds(offset_string)
-    with open(subtitle_fname) as subtitle_file:
+def main(*argv):
+    parser = argparse.ArgumentParser(
+            prog='offset_tmp_subs',
+            description='Delay or hasten subtitles in MTP format.'
+            )
+    parser.add_argument('offset', help='amount of time, by which the '
+                        'timestamps in the output file should be delayed (if '
+                        'negative) or hasten. Examples of allowed values: '
+                        '"10" (delay by ten seconds), "-10", "+10", '
+                        '"-01:00" (hasten by one minute), '
+                        '"01:00:00" (delay by one hour)')
+    parser.add_argument('input_file',
+                        help='file name of the original subtitle file')
+    parser.add_argument('output_file',
+                        help='file name of the new file with delayed/hastened '
+                        'subtitles')
+    args = parser.parse_args(argv[1:])
+    offset_seconds = total_seconds(args.offset)
+    with open(args.input_file) as subtitle_file:
         subtitle_file_lines = list(subtitle_file)
-    with open(output_fname, 'x') as output_file:
-        for line in offset_subtitles(subtitle_file_lines, offset):
+    with open(args.output_file, 'x') as output_file:
+        for line in offset_subtitles(subtitle_file_lines, offset_seconds):
             print(line, file=output_file)
 
-
-"""Convert a timestamp string with hours, minutes, and seconds to a total
-number of seconds:
-
-    >>> timestamp_to_seconds('02:10:39')
-    7839
-
-You can omit hours and seconds:
-
-    >>> timestamp_to_seconds('01:10')
-    70
-    >>> timestamp_to_seconds('120')
-    120
-"""
 
 def total_seconds(offset_string):
     """Convert a timestamp string with hours, minutes, and seconds to a total
