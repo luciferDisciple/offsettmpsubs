@@ -1,8 +1,18 @@
-# offset_tmp_subs
+# offsettmpsubs
+
+A cli tool for delaying/hastening subtitles in stored in TMP format.
+
+## Installation
 
 ```
-$ offset_tmp_subs --help
-usage: offset_tmp_subs [-h] OFFSET INFILE OUTFILE
+$ pip install --user offsettmpsubs
+```
+
+## Usage
+
+```
+$ offsettmpsubs --help
+usage: offsettmpsubs [-h] OFFSET INFILE OUTFILE
 
 Delay or hasten subtitles in MTP format.
 
@@ -27,7 +37,7 @@ $ head s05e09_subs_en.txt
 00:00:21:along the X axis.
 00:00:24:Yes. There's the X axix.|Right there.
 00:00:26:You can see clearly on this page|that we have a surplus
-$ offset_tmp_subs 01:23 s05e09_subs_en.txt delayed.txt
+$ offsettmpsubs 01:23 s05e09_subs_en.txt delayed.txt
 $ head delayed.txt
 00:01:25:Here are our final actual costs for this year.
 00:01:28:Okay.

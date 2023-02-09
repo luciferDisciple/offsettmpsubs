@@ -1,5 +1,3 @@
-#!/bin/python3
-
 import argparse
 import re
 import sys
@@ -13,9 +11,9 @@ OFFSET_TIME_PATTERNS = {
 }
 
 
-def main(*argv):
+def main(argv=sys.argv):
     parser = argparse.ArgumentParser(
-            prog='offset_tmp_subs',
+            prog='offsettmpsubs',
             description='Delay or hasten subtitles in MTP format.'
             )
     parser.add_argument('offset', metavar='OFFSET',
@@ -152,7 +150,3 @@ def offset_timestamp(timestamp, seconds):
     minute = total_minutes % 60
     hour = total_minutes // 60
     return f'{hour:02d}:{minute:02d}:{second:02d}'
-
-
-if __name__ == '__main__':
-    main(*sys.argv)
